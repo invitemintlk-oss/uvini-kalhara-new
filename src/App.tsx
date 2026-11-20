@@ -34,11 +34,19 @@ export default function App() {
 
   const weddingDate = new Date('2027-01-20T08:15:00+05:30');
 
+  // Start the song from the beginning. Only marks "playing" via the audio's own onPlay event,
+  // so a blocked attempt (browsers block audio without a tap) doesn't stop later retries.
+  const startedOnce = useRef(false);
   const startMusic = () => {
-    if (audioRef.current && !isMusicPlaying) {
-      audioRef.current.play().catch(err => console.log("Audio play blocked: ", err));
-      setIsMusicPlaying(true);
-    }
+    const audio = audioRef.current;
+    if (!audio || !audio.paused) return;
+    if (!startedOnce.current) audio.currentTime = 0;
+    audio
+      .play()
+      .then(() => {
+        startedOnce.current = true;
+      })
+      .catch((err) => console.log('Audio play blocked until the guest taps: ', err));
   };
 
   const toggleMusic = () => {
@@ -53,23 +61,21 @@ export default function App() {
   };
 
   useEffect(() => {
-    const handleFirstInteraction = () => {
-      startMusic();
-      window.removeEventListener('click', handleFirstInteraction);
-      window.removeEventListener('scroll', handleFirstInteraction);
-      window.removeEventListener('touchstart', handleFirstInteraction);
-    };
+    // Try right away (works where the browser allows autoplay, e.g. returning visitors)…
+    startMusic();
 
-    window.addEventListener('click', handleFirstInteraction);
-    window.addEventListener('scroll', handleFirstInteraction, { passive: true });
-    window.addEventListener('touchstart', handleFirstInteraction, { passive: true });
-
-    return () => {
-      window.removeEventListener('click', handleFirstInteraction);
-      window.removeEventListener('scroll', handleFirstInteraction);
-      window.removeEventListener('touchstart', handleFirstInteraction);
+    // …otherwise start on the guest's first real gesture. Scroll is NOT a gesture browsers
+    // accept for audio, so only tap/click/key are used. Listeners stay until the song is
+    // actually playing, then remove themselves.
+    const events = ['pointerdown', 'click', 'touchend', 'keydown'] as const;
+    const onGesture = () => {
+      if (!startedOnce.current) startMusic();
+      else cleanup();
     };
-  }, [isMusicPlaying]);
+    const cleanup = () => events.forEach((ev) => window.removeEventListener(ev, onGesture));
+    events.forEach((ev) => window.addEventListener(ev, onGesture, { passive: true }));
+    return cleanup;
+  }, []);
 
   return (
     <div className="relative min-h-screen font-sans selection:bg-[#5b9bd5] selection:text-white overflow-x-hidden bg-brand-ivory">
@@ -80,7 +86,7 @@ export default function App() {
         ref={audioRef}
         src="/ordinary.mp3"
         loop
-        preload="none"
+        preload="metadata"
         onPlay={() => setIsMusicPlaying(true)}
         onPause={() => setIsMusicPlaying(false)}
       />
@@ -93,11 +99,14 @@ export default function App() {
             transition={{ duration: 1 }}
             className="fixed inset-0 z-50"
           >
-            <IntroOverlay onEnter={() => {
-              setShowIntro(false);
-              setShowMain(true);
-              startMusic();
-            }} />
+            <IntroOverlay
+              onOpen={startMusic}
+              onEnter={() => {
+                setShowIntro(false);
+                setShowMain(true);
+                startMusic();
+              }}
+            />
           </motion.div>
         )}
       </AnimatePresence>

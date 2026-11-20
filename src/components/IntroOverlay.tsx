@@ -4,14 +4,18 @@ import { getGuestFromUrl } from '../guest';
 
 interface IntroOverlayProps {
   onEnter: () => void;
+  /** Called synchronously inside the "Open Invitation" tap so the music may start. */
+  onOpen?: () => void;
 }
 
-export const IntroOverlay: React.FC<IntroOverlayProps> = ({ onEnter }) => {
+export const IntroOverlay: React.FC<IntroOverlayProps> = ({ onEnter, onOpen }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const guestName = getGuestFromUrl();
 
   const handlePlay = () => {
+    // Start the song first, inside the tap — browsers only allow audio from a user gesture.
+    onOpen?.();
     if (videoRef.current) {
       setIsPlaying(true);
       videoRef.current.play().catch((e) => {
