@@ -17,7 +17,7 @@ export const Footer: React.FC = () => {
           <div className="space-y-6">
             <div className="flex items-center gap-3">
               <Heart className="h-7 w-7 text-[#8ec3ec]" strokeWidth={1.2} />
-              <span className="font-names text-5xl text-[#cfe5f7]">U &amp; K</span>
+              <span className="font-display italic text-5xl text-[#cfe5f7] tracking-wide">U &amp; K</span>
             </div>
             <p className="text-white/70 leading-[1.8] font-serif tracking-wide text-sm md:text-base pr-4">
               Thank you for visiting our wedding website and being part of our love story. The honor of your presence would mean the world to us.

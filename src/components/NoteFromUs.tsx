@@ -42,7 +42,7 @@ export const NoteFromUs: React.FC = () => {
 
             <SkyOrnament className="mt-12" />
             <p className="mt-6 text-[#2f6aa3] font-sans tracking-[0.3em] uppercase text-[10px] md:text-xs">With love always</p>
-            <p className="font-names text-sky-shimmer text-5xl md:text-6xl mt-2">Uvini &amp; Kalhara</p>
+            <p className="font-display italic text-sky-shimmer text-4xl md:text-5xl mt-2 tracking-wide">Uvini &amp; Kalhara</p>
           </div>
         </motion.div>
       </div>
