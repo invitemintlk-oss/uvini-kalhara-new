@@ -193,7 +193,7 @@ export const HeroContent: React.FC = () => {
 
             <div className="my-3 sm:my-5 flex flex-col items-center">
               <motion.h1
-                className="font-names text-sky-shimmer text-[3.6rem] sm:text-7xl md:text-8xl leading-[1.15]"
+                className="font-display italic font-normal text-sky-shimmer text-[3.4rem] sm:text-7xl md:text-8xl leading-[1.1] tracking-wide"
                 initial={{ opacity: 0, x: -40, filter: 'blur(8px)' }}
                 animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
                 transition={{ duration: 1.6, delay: 1.8, ease: 'easeOut' }}
@@ -201,7 +201,7 @@ export const HeroContent: React.FC = () => {
                 Uvini
               </motion.h1>
               <motion.span
-                className="font-names text-4xl sm:text-5xl text-[#C9A54C] leading-none -my-2 drop-shadow-[0_2px_6px_rgba(201,165,76,0.5)]"
+                className="font-script text-4xl sm:text-5xl text-[#C9A54C] leading-none -my-2 drop-shadow-[0_2px_6px_rgba(201,165,76,0.5)]"
                 initial={{ opacity: 0, scale: 0.3, rotate: -30 }}
                 animate={{ opacity: 1, scale: 1, rotate: 0 }}
                 transition={{ duration: 1, delay: 2.4, type: 'spring', bounce: 0.4 }}
@@ -209,7 +209,7 @@ export const HeroContent: React.FC = () => {
                 &amp;
               </motion.span>
               <motion.h1
-                className="font-names text-sky-shimmer text-[3.6rem] sm:text-7xl md:text-8xl leading-[1.15]"
+                className="font-display italic font-normal text-sky-shimmer text-[3.4rem] sm:text-7xl md:text-8xl leading-[1.1] tracking-wide"
                 initial={{ opacity: 0, x: 40, filter: 'blur(8px)' }}
                 animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
                 transition={{ duration: 1.6, delay: 2.1, ease: 'easeOut' }}
