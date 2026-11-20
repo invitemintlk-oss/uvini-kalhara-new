@@ -14,7 +14,7 @@ export const HomecomingDetails: React.FC = () => {
     <section
       id="details"
       className="w-full py-24 md:py-32 relative overflow-hidden bg-[#e3eff9]"
-      style={{ backgroundImage: `url('/sky/petals-wall.jpg')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+      style={{ backgroundImage: `url('/sky/petals-wall.webp')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
       <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/30 to-white/60" />
       <Bloom variant={1} spin className="w-40 md:w-56 -top-10 -left-12 opacity-80" />

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { submitToGoogleSheet } from '../googleSheets';
+import { getGuestFromUrl } from '../guest';
 import { Calendar, Phone } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Bloom, SkyOrnament } from './SkyDecor';
@@ -15,7 +16,8 @@ const Chevron = () => (
 );
 
 export const RSVPForm: React.FC = () => {
-  const [name, setName] = useState('');
+  // Pre-fill with the invitee's name from the admin-generated link (still editable)
+  const [name, setName] = useState(() => getGuestFromUrl());
   const [attending, setAttending] = useState('');
   const [guestCount, setGuestCount] = useState('1');
   const [message, setMessage] = useState('');
@@ -62,7 +64,7 @@ export const RSVPForm: React.FC = () => {
     <section
       id="rsvp"
       className="w-full py-24 md:py-32 relative overflow-hidden bg-[#e3f0fa]"
-      style={{ backgroundImage: `url('/sky/ornate-frame.jpg')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+      style={{ backgroundImage: `url('/sky/ornate-frame.webp')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
       <div className="absolute inset-0 bg-white/20" />
       <Bloom variant={2} spin className="w-36 md:w-48 -top-8 -right-10 opacity-90" />
@@ -79,7 +81,7 @@ export const RSVPForm: React.FC = () => {
           {/* Elegant RSVP monogram: script "Please", spaced serif capitals with gold diamonds, script "kindly respond" */}
           <div className="relative flex flex-col items-center">
             <motion.img
-              src="/sky/flower-1.png"
+              src="/sky/flower-1.webp"
               alt=""
               aria-hidden="true"
               className="w-14 md:w-16 mb-1 drop-shadow-md animate-slow-spin"

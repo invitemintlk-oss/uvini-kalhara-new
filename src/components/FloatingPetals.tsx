@@ -36,7 +36,7 @@ export const FloatingPetals: React.FC = () => {
       {petals.map((p) => (
         <motion.img
           key={p.id}
-          src={`/sky/flower-${p.variant}.png`}
+          src={`/sky/flower-${p.variant}.webp`}
           alt=""
           className="absolute top-0 left-0 drop-shadow-[0_4px_8px_rgba(47,106,163,0.3)]"
           style={{ width: p.size, height: p.size }}

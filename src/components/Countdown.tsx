@@ -35,13 +35,13 @@ export const Countdown: React.FC<CountdownProps> = ({ targetDate }) => {
   return (
     <section
       className="w-full pt-10 pb-40 sm:pb-52 md:pb-64 overflow-hidden relative bg-[#eef5fc]"
-      style={{ backgroundImage: 'url("/sky/bow-sky.jpg")', backgroundSize: 'cover', backgroundPosition: 'center' }}
+      style={{ backgroundImage: 'url("/sky/bow-sky.webp")', backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
       {/* Watercolour meadow (from "download (8)"), mirror-tiled along the bottom */}
       <motion.div
         className="absolute bottom-0 inset-x-0 h-40 sm:h-52 md:h-64 pointer-events-none mix-blend-multiply"
         style={{
-          backgroundImage: "url('/sky/bow-meadow-strip.jpg')",
+          backgroundImage: "url('/sky/bow-meadow-strip.webp')",
           backgroundRepeat: 'repeat-x',
           backgroundSize: 'auto 100%',
           backgroundPosition: 'center bottom',

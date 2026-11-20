@@ -82,32 +82,6 @@ const Sparkles: React.FC = () => {
 };
 
 export const HeroContent: React.FC = () => {
-  const searchParams = new URLSearchParams(window.location.search);
-  const prefix = searchParams.get('prefix');
-  const name = searchParams.get('name');
-
-  const getDisplayName = (p: string, n: string) => {
-    const trimmedName = n.trim();
-    if (!trimmedName) return '';
-    switch (p) {
-      case 'Mr.': return `Mr. ${trimmedName}`;
-      case 'Mrs.': return `Mrs. ${trimmedName}`;
-      case 'Miss': return `Miss ${trimmedName}`;
-      case 'Mr. & Mrs.': return `Mr. & Mrs. ${trimmedName}`;
-      case 'Family': return `${trimmedName} and Family`;
-      case 'Dear': return trimmedName;
-      default: return p ? `${p} ${trimmedName}` : trimmedName;
-    }
-  };
-
-  let guestNameString = '';
-  const pathname = window.location.pathname.slice(1);
-  if (pathname && pathname !== 'admin') {
-    guestNameString = getDisplayName(prefix || '', decodeURIComponent(pathname));
-  } else if (prefix || name) {
-    guestNameString = getDisplayName(prefix || '', name || '');
-  }
-
   // Parallax: garland lifts away, meadow sinks, content drifts slower
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
@@ -125,7 +99,7 @@ export const HeroContent: React.FC = () => {
       {/* Sky base */}
       <motion.div
         className="absolute inset-0 z-0"
-        style={{ backgroundImage: "url('/sky/hero-clouds.jpg')", backgroundSize: 'cover', backgroundPosition: 'center' }}
+        style={{ backgroundImage: "url('/sky/hero-clouds.webp')", backgroundSize: 'cover', backgroundPosition: 'center' }}
         initial={{ scale: 1.15 }}
         animate={{ scale: 1 }}
         transition={{ duration: 8, ease: 'easeOut' }}
@@ -143,7 +117,7 @@ export const HeroContent: React.FC = () => {
         >
           <div
             className="h-[17vh] sm:h-[22vh] md:h-[28vh] origin-top animate-garland-sway -mx-4"
-            style={stripStyle('/sky/hero-garland.jpg', 'down')}
+            style={stripStyle('/sky/hero-garland.webp', 'down')}
           />
         </motion.div>
       </motion.div>
@@ -152,7 +126,7 @@ export const HeroContent: React.FC = () => {
       <motion.div className="absolute bottom-0 inset-x-0 z-20 pointer-events-none" style={{ y: meadowY }}>
         <motion.div
           className="h-[17vh] sm:h-[22vh] md:h-[30vh] origin-bottom"
-          style={stripStyle('/sky/hero-meadow-strip.jpg', 'up')}
+          style={stripStyle('/sky/hero-meadow-strip.webp', 'up')}
           initial={{ y: '100%', opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 2.2, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
@@ -164,18 +138,6 @@ export const HeroContent: React.FC = () => {
         className="relative z-30 w-full flex flex-col items-center px-4 pt-[12vh] pb-[13vh] sm:pt-[16vh] sm:pb-[18vh] md:pt-[20vh] md:pb-[24vh]"
         style={{ y: contentY, opacity: contentOpacity }}
       >
-        {guestNameString && (
-          <motion.div
-            className="relative z-30 flex flex-col items-center mb-6 glass-sky px-7 py-3 rounded-2xl text-center"
-            initial={{ opacity: 0, y: -15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 1.2 }}
-          >
-            <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] font-sans text-[#2f6aa3]">We cordially invite</p>
-            <p className="font-serif text-xl sm:text-3xl text-[#1b3f66]">{guestNameString}</p>
-          </motion.div>
-        )}
-
         <div className="relative w-[92%] max-w-[21rem] sm:max-w-md md:max-w-lg px-4 sm:px-10 pt-20 sm:pt-24 pb-10 text-center">
           {/* Soft rotating halo of light behind the arch */}
           <div
@@ -202,14 +164,14 @@ export const HeroContent: React.FC = () => {
             transition={{ duration: 1.4, delay: 2.6, type: 'spring', bounce: 0.35 }}
             aria-hidden="true"
           >
-            <img src="/sky/flower-2.png" alt="" className="w-11 sm:w-14 -mr-3 rotate-[-25deg] drop-shadow-md" />
-            <img src="/sky/flower-1.png" alt="" className="w-[4.5rem] sm:w-24 relative z-10 animate-slow-spin drop-shadow-lg" />
-            <img src="/sky/flower-2.png" alt="" className="w-11 sm:w-14 -ml-3 rotate-[25deg] drop-shadow-md" />
+            <img src="/sky/flower-2.webp" alt="" className="w-11 sm:w-14 -mr-3 rotate-[-25deg] drop-shadow-md" />
+            <img src="/sky/flower-1.webp" alt="" className="w-[4.5rem] sm:w-24 relative z-10 animate-slow-spin drop-shadow-lg" />
+            <img src="/sky/flower-2.webp" alt="" className="w-11 sm:w-14 -ml-3 rotate-[25deg] drop-shadow-md" />
           </motion.div>
 
           {/* Blooms at the arch base corners */}
-          <img src="/sky/flower-1.png" alt="" aria-hidden="true" className="absolute -bottom-6 -left-7 w-16 sm:w-20 animate-sway drop-shadow-lg pointer-events-none" />
-          <img src="/sky/flower-2.png" alt="" aria-hidden="true" className="absolute -bottom-5 -right-6 w-14 sm:w-[4.5rem] animate-sway drop-shadow-lg pointer-events-none" style={{ animationDelay: '-3s' }} />
+          <img src="/sky/flower-1.webp" alt="" aria-hidden="true" className="absolute -bottom-6 -left-7 w-16 sm:w-20 animate-sway drop-shadow-lg pointer-events-none" />
+          <img src="/sky/flower-2.webp" alt="" aria-hidden="true" className="absolute -bottom-5 -right-6 w-14 sm:w-[4.5rem] animate-sway drop-shadow-lg pointer-events-none" style={{ animationDelay: '-3s' }} />
 
           <div className="relative">
             <motion.p
@@ -231,7 +193,7 @@ export const HeroContent: React.FC = () => {
 
             <div className="my-3 sm:my-5 flex flex-col items-center">
               <motion.h1
-                className="font-script text-sky-shimmer text-[3.6rem] sm:text-7xl md:text-8xl leading-[1.15]"
+                className="font-names text-sky-shimmer text-[3.6rem] sm:text-7xl md:text-8xl leading-[1.15]"
                 initial={{ opacity: 0, x: -40, filter: 'blur(8px)' }}
                 animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
                 transition={{ duration: 1.6, delay: 1.8, ease: 'easeOut' }}
@@ -239,7 +201,7 @@ export const HeroContent: React.FC = () => {
                 Uvini
               </motion.h1>
               <motion.span
-                className="font-script text-4xl sm:text-5xl text-[#C9A54C] leading-none -my-2 drop-shadow-[0_2px_6px_rgba(201,165,76,0.5)]"
+                className="font-names text-4xl sm:text-5xl text-[#C9A54C] leading-none -my-2 drop-shadow-[0_2px_6px_rgba(201,165,76,0.5)]"
                 initial={{ opacity: 0, scale: 0.3, rotate: -30 }}
                 animate={{ opacity: 1, scale: 1, rotate: 0 }}
                 transition={{ duration: 1, delay: 2.4, type: 'spring', bounce: 0.4 }}
@@ -247,7 +209,7 @@ export const HeroContent: React.FC = () => {
                 &amp;
               </motion.span>
               <motion.h1
-                className="font-script text-sky-shimmer text-[3.6rem] sm:text-7xl md:text-8xl leading-[1.15]"
+                className="font-names text-sky-shimmer text-[3.6rem] sm:text-7xl md:text-8xl leading-[1.15]"
                 initial={{ opacity: 0, x: 40, filter: 'blur(8px)' }}
                 animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
                 transition={{ duration: 1.6, delay: 2.1, ease: 'easeOut' }}

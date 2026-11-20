@@ -1,14 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Heart, Quote, Send } from 'lucide-react';
-import { addDoc, collection, limit, onSnapshot, query, serverTimestamp, Timestamp, where } from 'firebase/firestore';
-import { db } from '../firebase';
-import { submitToGoogleSheet } from '../googleSheets';
+import { fetchWishes, submitToGoogleSheet } from '../googleSheets';
+import { getGuestFromUrl } from '../guest';
 import { Bloom, SkyHeading, SkyOrnament } from './SkyDecor';
-
-// The Firestore project may be shared with other invitation sites, so every wish
-// is tagged and only this couple's wishes are shown.
-const COUPLE_ID = 'uvini-kalhara-2027';
 
 interface Wish {
   id: string;
@@ -21,40 +16,47 @@ const fieldClass =
   'w-full bg-white/80 text-[#1b3f66] border border-[#5b9bd5]/40 rounded-xl px-5 py-4 font-sans focus:ring-2 focus:ring-[#5b9bd5]/40 focus:border-[#2f6aa3] outline-none transition-all placeholder:text-[#24476b]/40';
 
 const formatDate = (d: Date) =>
-  d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+const sameWish = (a: { name: string; message: string }, b: { name: string; message: string }) =>
+  a.name.trim() === b.name.trim() && a.message.trim() === b.message.trim();
 
 export const Wishes: React.FC = () => {
   const [wishes, setWishes] = useState<Wish[]>([]);
-  const [name, setName] = useState('');
+  // Wishes sent from this browser that the sheet hasn't returned yet (shown immediately)
+  const [pending, setPending] = useState<Wish[]>([]);
+  // Pre-fill with the invitee's name from the admin-generated link
+  const [name, setName] = useState(() => getGuestFromUrl());
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
 
-  // Live wall of wishes (sorted client-side to avoid needing a composite index)
+  // Wall of wishes from the Google Sheet, refreshed every 30 s
   useEffect(() => {
-    const q = query(collection(db, 'wishes'), where('couple', '==', COUPLE_ID), limit(200));
-    const unsub = onSnapshot(
-      q,
-      (snap) => {
-        const list = snap.docs.map((d) => {
-          const data = d.data();
-          const ts = data.createdAt as Timestamp | null;
-          return {
-            id: d.id,
-            name: String(data.name ?? ''),
-            message: String(data.message ?? ''),
-            createdAt: ts?.toDate ? ts.toDate() : new Date(),
-          };
-        });
-        list.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-        setWishes(list);
-      },
-      (err) => console.error('Wishes listener failed', err)
-    );
-    return unsub;
+    let alive = true;
+    const load = () =>
+      fetchWishes()
+        .then((list) => {
+          if (!alive) return;
+          setWishes(
+            list.map((w, i) => ({ id: `s-${i}-${w.createdAt}`, name: w.name, message: w.message, createdAt: new Date(w.createdAt) }))
+          );
+        })
+        .catch((err) => console.error('Could not load wishes', err));
+    load();
+    const t = setInterval(load, 30000);
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
   }, []);
+
+  // Drop pending wishes once the sheet has them
+  useEffect(() => {
+    setPending((p) => p.filter((pw) => !wishes.some((w) => sameWish(w, pw))));
+  }, [wishes]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,18 +69,9 @@ export const Wishes: React.FC = () => {
     setIsSubmitting(true);
     setError(null);
     try {
-      await addDoc(collection(db, 'wishes'), {
-        name: n.slice(0, 99),
-        message: m.slice(0, 999),
-        couple: COUPLE_ID,
-        createdAt: serverTimestamp(),
-      });
-      // Keep a copy in the couple's Google Sheet as well (best effort)
-      submitToGoogleSheet('wishes', { name: n, wish: m, submittedAt: new Date().toISOString() }).catch((err) =>
-        console.error('Sheet copy failed', err)
-      );
+      await submitToGoogleSheet('wishes', { name: n.slice(0, 99), wish: m.slice(0, 999), submittedAt: new Date().toISOString() });
+      setPending((p) => [{ id: `p-${Date.now()}`, name: n, message: m, createdAt: new Date() }, ...p]);
       setSent(true);
-      setName('');
       setMessage('');
       setTimeout(() => setSent(false), 4000);
     } catch (err) {
@@ -89,14 +82,15 @@ export const Wishes: React.FC = () => {
     }
   };
 
-  const visible = showAll ? wishes : wishes.slice(0, 6);
+  const all = [...pending, ...wishes];
+  const visible = showAll ? all : all.slice(0, 6);
 
   return (
     <section
       id="wishes"
       aria-label="Wishes"
       className="w-full pt-36 pb-44 sm:pt-44 sm:pb-56 md:pt-52 md:pb-64 relative overflow-hidden bg-[#e3eff9]"
-      style={{ backgroundImage: `url('/sky/hero-clouds.jpg')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+      style={{ backgroundImage: `url('/sky/hero-clouds.webp')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.7)_0%,rgba(255,255,255,0.2)_60%,transparent_85%)]" />
 
@@ -104,7 +98,7 @@ export const Wishes: React.FC = () => {
       <motion.div
         className="absolute top-0 inset-x-0 h-40 sm:h-56 md:h-64 pointer-events-none"
         style={{
-          backgroundImage: "url('/sky/hero-garland.jpg')",
+          backgroundImage: "url('/sky/hero-garland.webp')",
           backgroundRepeat: 'repeat-x',
           backgroundSize: 'auto 100%',
           backgroundPosition: 'center top',
@@ -120,7 +114,7 @@ export const Wishes: React.FC = () => {
       <motion.div
         className="absolute bottom-0 inset-x-0 h-40 sm:h-56 md:h-64 pointer-events-none"
         style={{
-          backgroundImage: "url('/sky/hero-meadow-strip.jpg')",
+          backgroundImage: "url('/sky/hero-meadow-strip.webp')",
           backgroundRepeat: 'repeat-x',
           backgroundSize: 'auto 100%',
           backgroundPosition: 'center bottom',
@@ -204,7 +198,7 @@ export const Wishes: React.FC = () => {
         </motion.div>
 
         {/* Wall of wishes */}
-        {wishes.length === 0 ? (
+        {all.length === 0 ? (
           <p className="text-center font-serif italic text-ink/70">Be the first to leave a wish ✨</p>
         ) : (
           <>
@@ -236,13 +230,13 @@ export const Wishes: React.FC = () => {
                 ))}
               </AnimatePresence>
             </div>
-            {wishes.length > 6 && (
+            {all.length > 6 && (
               <div className="text-center mt-6">
                 <button
                   onClick={() => setShowAll((s) => !s)}
                   className="rounded-full border border-[#2f6aa3]/40 bg-white/70 px-8 py-3 text-[#2f6aa3] text-xs uppercase tracking-[0.25em] hover:bg-white transition-all"
                 >
-                  {showAll ? 'Show fewer' : `View all ${wishes.length} wishes`}
+                  {showAll ? 'Show fewer' : `View all ${all.length} wishes`}
                 </button>
               </div>
             )}

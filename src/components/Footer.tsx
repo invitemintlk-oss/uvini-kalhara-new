@@ -10,14 +10,14 @@ export const Footer: React.FC = () => {
     <footer className="w-full py-16 bg-gradient-to-b from-[#1b3f66] to-[#0f2742] text-white relative overflow-hidden">
       <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#8ec3ec] to-transparent" />
       <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-full max-w-2xl h-48 bg-[#5b9bd5]/25 blur-[100px] rounded-full pointer-events-none" />
-      <img src="/sky/flower-2.png" alt="" aria-hidden="true" className="absolute -right-10 -bottom-10 w-40 opacity-30 animate-slow-spin pointer-events-none" />
+      <img src="/sky/flower-2.webp" alt="" aria-hidden="true" className="absolute -right-10 -bottom-10 w-40 opacity-30 animate-slow-spin pointer-events-none" />
 
       <div className="container px-4 md:px-6 mx-auto relative z-10">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-6">
             <div className="flex items-center gap-3">
               <Heart className="h-7 w-7 text-[#8ec3ec]" strokeWidth={1.2} />
-              <span className="font-script text-5xl text-[#cfe5f7]">U &amp; K</span>
+              <span className="font-names text-5xl text-[#cfe5f7]">U &amp; K</span>
             </div>
             <p className="text-white/70 leading-[1.8] font-serif tracking-wide text-sm md:text-base pr-4">
               Thank you for visiting our wedding website and being part of our love story. The honor of your presence would mean the world to us.

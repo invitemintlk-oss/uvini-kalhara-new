@@ -1,166 +1,189 @@
-import React, { useState } from 'react';
-import { Check, Link as LinkIcon, FileText } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Check, Link as LinkIcon, FileText, Sparkles } from 'lucide-react';
+import { PREFIXES, buildInviteLink, buildInviteMessage, getGreeting } from '../guest';
+
+interface Generated {
+  prefix: string;
+  name: string;
+  link: string;
+  greeting: string;
+  message: string;
+}
+
+/** Clipboard API needs a secure context; fall back to a hidden textarea otherwise. */
+const copyText = async (text: string) => {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+  }
+};
+
+const fieldClass =
+  'w-full h-12 px-4 rounded-xl border border-[#5b9bd5]/40 bg-white text-[#1b3f66] focus:border-[#2f6aa3] focus:ring-2 focus:ring-[#5b9bd5]/30 outline-none transition-all';
+const labelClass = 'text-xs font-semibold text-[#2f6aa3] uppercase tracking-[0.2em]';
 
 export const Admin: React.FC = () => {
-  const [prefix, setPrefix] = useState('Mr.');
+  const [prefix, setPrefix] = useState<string>('Mr.');
   const [guestName, setGuestName] = useState('');
-  const [inviteType, setInviteType] = useState('both');
-  const [linkCopied, setLinkCopied] = useState(false);
-  const [messageCopied, setMessageCopied] = useState(false);
+  const [generated, setGenerated] = useState<Generated | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
-  const getDisplayName = (p: string, n: string) => {
-    const trimmedName = n.trim();
-    if (!trimmedName) return '';
+  useEffect(() => {
+    document.title = 'Invitation Link Generator';
+  }, []);
 
-    switch (p) {
-      case 'Mr.': return `Mr. ${trimmedName}`;
-      case 'Mrs.': return `Mrs. ${trimmedName}`;
-      case 'Miss': return `Miss ${trimmedName}`;
-      case 'Mr. & Mrs.': return `Mr. & Mrs. ${trimmedName}`;
-      case 'Family': return `${trimmedName} and Family`;
-      case 'Dear': return trimmedName; // Handled specially in greeting
-      default: return `${p} ${trimmedName}`;
-    }
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 2000);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  const canGenerate = guestName.trim().length > 0;
+  const isStale = !!generated && (generated.prefix !== prefix || generated.name !== guestName.trim());
+
+  const handleGenerate = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!canGenerate) return;
+    const link = buildInviteLink(window.location.origin, prefix, guestName);
+    setGenerated({
+      prefix,
+      name: guestName.trim(),
+      link,
+      greeting: getGreeting(prefix, guestName),
+      message: buildInviteMessage(prefix, guestName, link),
+    });
   };
 
-  const getGreeting = (p: string, n: string) => {
-    const trimmedName = n.trim();
-    if (!trimmedName) return '';
-
-    if (p === 'Dear') {
-      return `Dear ${trimmedName}`;
-    }
-    return `Dear ${getDisplayName(p, n)}`;
-  };
-
-  const baseUrl = window.location.origin;
-
-  const displayName = getDisplayName(prefix, guestName);
-
-  const generatedLink = guestName.trim()
-    ? `${baseUrl}/${encodeURIComponent(guestName.trim())}?prefix=${encodeURIComponent(prefix)}${inviteType !== 'both' ? `&invite=${inviteType}` : ''}`
-    : baseUrl;
-
-  const getInviteText = (type: string) => {
-    if (type === 'wedding') return 'wedding ceremony';
-    if (type === 'homecoming') return 'homecoming celebration';
-    return 'wedding and homecoming';
-  };
-
-  const generatedMessage = guestName.trim() ? `${getGreeting(prefix, guestName)} ❤️\n\nWith joyful hearts, we warmly invite you to celebrate one of the most special days of our lives as we begin our journey together.\n\nPlease view our ${getInviteText(inviteType)} invitation and all the event details through the link below 🌐:\n\n${generatedLink}\n\nYour presence would truly mean the world to us, and we would be honored to celebrate this beautiful moment together.\n\nWith love,\n❤️ Uvini & Kalhara` : '';
-
-  const handleCopyLink = async () => {
-    if (!guestName.trim()) return;
-    try {
-      await navigator.clipboard.writeText(generatedLink);
-      setLinkCopied(true);
-      setTimeout(() => setLinkCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
-    }
-  };
-
-  const handleCopyMessage = async () => {
-    if (!guestName.trim()) return;
-    try {
-      await navigator.clipboard.writeText(generatedMessage);
-      setMessageCopied(true);
-      setTimeout(() => setMessageCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
-    }
+  const copy = async (text: string, label: string) => {
+    await copyText(text);
+    setToast(label);
   };
 
   return (
-    <div className="min-h-screen bg-brand-ivory text-stone-800 p-6 md:p-12 font-sans flex items-center justify-center">
-      <div className="max-w-2xl w-full bg-white rounded-3xl shadow-xl p-8 border border-[#D4AF37]/30">
-        <h1 className="text-3xl font-serif text-center mb-8 text-stone-800">Wedding Invitation Link Generator</h1>
+    <div className="min-h-screen bg-gradient-to-br from-[#eaf4fc] via-white to-[#dbeaf7] text-[#1b3f66] p-4 sm:p-8 md:p-12 font-sans flex items-start sm:items-center justify-center">
+      <div className="max-w-2xl w-full bg-white/90 backdrop-blur rounded-3xl shadow-[0_25px_60px_-20px_rgba(31,78,121,0.35)] p-6 sm:p-10 border border-white">
+        <div className="text-center mb-8">
+          <p className="font-names text-4xl sm:text-5xl text-[#2f6aa3]">Uvini &amp; Kalhara</p>
+          <h1 className="mt-2 text-sm sm:text-base font-semibold tracking-[0.25em] uppercase text-[#1b3f66]">
+            Invitation Link Generator
+          </h1>
+        </div>
 
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <form onSubmit={handleGenerate} className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-stone-600 uppercase tracking-widest">Prefix</label>
-              <select
-                value={prefix}
-                onChange={(e) => setPrefix(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl border border-stone-200 bg-stone-50 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all"
-              >
-                <option value="Mr.">Mr.</option>
-                <option value="Mrs.">Mrs.</option>
-                <option value="Miss">Miss</option>
-                <option value="Mr. & Mrs.">Mr. & Mrs.</option>
-                <option value="Family">Family</option>
-                <option value="Dear">Dear</option>
+              <label htmlFor="prefix" className={labelClass}>Select Prefix</label>
+              <select id="prefix" value={prefix} onChange={(e) => setPrefix(e.target.value)} className={fieldClass}>
+                {PREFIXES.map((p) => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
               </select>
             </div>
-
-            <div className="md:col-span-2 space-y-2">
-              <label className="text-sm font-medium text-stone-600 uppercase tracking-widest">Guest Name</label>
+            <div className="sm:col-span-2 space-y-2">
+              <label htmlFor="guest" className={labelClass}>Guest Name</label>
               <input
+                id="guest"
                 type="text"
                 placeholder="e.g. Sanjaya"
                 value={guestName}
                 onChange={(e) => setGuestName(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl border border-stone-200 bg-stone-50 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all"
+                className={fieldClass}
+                autoComplete="off"
               />
             </div>
           </div>
 
+          <button
+            type="submit"
+            disabled={!canGenerate}
+            className="btn-sky w-full h-12 rounded-xl font-semibold tracking-[0.2em] uppercase text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+          >
+            <Sparkles className="w-4 h-4" /> Generate Link
+          </button>
+        </form>
+
+        <div className="mt-8 pt-8 border-t border-[#5b9bd5]/20 space-y-6">
+          {isStale && (
+            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+              The prefix or name changed — click <strong>Generate Link</strong> again to update.
+            </p>
+          )}
+
+          {/* Greeting preview */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-stone-600 uppercase tracking-widest">Invite Type</label>
-            <select
-              value={inviteType}
-              onChange={(e) => setInviteType(e.target.value)}
-              className="w-full h-12 px-4 rounded-xl border border-stone-200 bg-stone-50 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all"
-            >
-              <option value="both">Both (Wedding & Homecoming)</option>
-              <option value="wedding">Wedding Only</option>
-              <option value="homecoming">Homecoming Only</option>
-            </select>
+            <p className={labelClass}>Greeting Preview</p>
+            <div className="min-h-12 px-4 py-3 rounded-xl bg-[#eaf4fc] border border-[#5b9bd5]/25 text-lg font-serif">
+              {generated ? generated.greeting : <span className="text-[#24476b]/40 text-sm font-sans">Generate a link to preview</span>}
+            </div>
           </div>
 
-          <div className="pt-6 border-t border-stone-100 space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-stone-600 uppercase tracking-widest">Generated Link</label>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input
-                  type="text"
-                  readOnly
-                  value={guestName.trim() ? generatedLink : ''}
-                  className="w-full h-12 px-4 rounded-xl border border-stone-200 bg-stone-50 text-stone-500 text-sm outline-none"
-                />
-                <button
-                  onClick={handleCopyLink}
-                  disabled={!guestName.trim()}
-                  className="h-12 px-6 flex items-center justify-center gap-2 bg-stone-800 hover:bg-black text-[#D4AF37] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl font-medium transition-all sm:min-w-[140px]"
-                >
-                  {linkCopied ? <Check className="w-4 h-4" /> : <LinkIcon className="w-4 h-4" />}
-                  {linkCopied ? 'Copied!' : 'Copy Link Only'}
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-stone-600 uppercase tracking-widest">Full Message Template</label>
-              <textarea
+          {/* Link */}
+          <div className="space-y-2">
+            <p className={labelClass}>Generated Link</p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
                 readOnly
-                value={generatedMessage}
-                rows={12}
-                className="w-full p-4 rounded-xl border border-stone-200 bg-stone-50 text-stone-600 text-sm outline-none resize-none"
+                value={generated?.link ?? ''}
+                placeholder="—"
+                onFocus={(e) => e.target.select()}
+                className="w-full h-12 px-4 rounded-xl border border-[#5b9bd5]/30 bg-[#f5f9fd] text-[#24476b] text-sm outline-none"
               />
               <button
-                onClick={handleCopyMessage}
-                disabled={!guestName.trim()}
-                className="w-full h-12 mt-2 flex items-center justify-center gap-2 bg-[#D4AF37] hover:bg-[#C5A030] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all"
+                type="button"
+                onClick={() => generated && copy(generated.link, 'Link copied!')}
+                disabled={!generated}
+                className="h-12 px-5 shrink-0 flex items-center justify-center gap-2 rounded-xl border border-[#2f6aa3]/40 bg-white text-[#2f6aa3] font-medium hover:bg-[#eaf4fc] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               >
-                {messageCopied ? <Check className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
-                {messageCopied ? 'Message Copied!' : 'Copy Full Message'}
+                <LinkIcon className="w-4 h-4" /> Copy Link Only
               </button>
             </div>
           </div>
+
+          {/* Message */}
+          <div className="space-y-2">
+            <p className={labelClass}>Full Message</p>
+            <textarea
+              readOnly
+              value={generated?.message ?? ''}
+              rows={13}
+              className="w-full p-4 rounded-xl border border-[#5b9bd5]/30 bg-[#f5f9fd] text-[#24476b] text-sm leading-relaxed outline-none resize-none"
+            />
+            <button
+              type="button"
+              onClick={() => generated && copy(generated.message, 'Message copied!')}
+              disabled={!generated}
+              className="btn-sky w-full h-12 rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+            >
+              <FileText className="w-5 h-5" /> Copy Full Message
+            </button>
+          </div>
         </div>
+      </div>
+
+      <div className="fixed bottom-6 inset-x-0 z-50 flex justify-center pointer-events-none" role="status" aria-live="polite">
+        <AnimatePresence>
+          {toast && (
+            <motion.div
+              className="flex items-center gap-2 bg-[#1b3f66] text-white px-5 py-3 rounded-full shadow-xl text-sm"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+            >
+              <Check className="w-4 h-4 text-[#8ec3ec]" /> {toast}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
 };
-

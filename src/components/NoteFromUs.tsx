@@ -9,7 +9,7 @@ export const NoteFromUs: React.FC = () => {
       aria-label="A note from us"
       id="note"
       className="relative w-full py-24 md:py-32 overflow-hidden bg-[#d6e6f5]"
-      style={{ backgroundImage: `url('/sky/arch-bloom.jpg')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+      style={{ backgroundImage: `url('/sky/arch-bloom.webp')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
       <div className="absolute inset-0 bg-white/15" />
 
@@ -42,7 +42,7 @@ export const NoteFromUs: React.FC = () => {
 
             <SkyOrnament className="mt-12" />
             <p className="mt-6 text-[#2f6aa3] font-sans tracking-[0.3em] uppercase text-[10px] md:text-xs">With love always</p>
-            <p className="font-script text-sky-shimmer text-5xl md:text-6xl mt-2">Uvini &amp; Kalhara</p>
+            <p className="font-names text-sky-shimmer text-5xl md:text-6xl mt-2">Uvini &amp; Kalhara</p>
           </div>
         </motion.div>
       </div>

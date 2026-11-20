@@ -9,7 +9,7 @@ export const Bloom: React.FC<{
   delay?: number;
 }> = ({ className = '', variant = 1, spin = false, delay = 0 }) => (
   <motion.img
-    src={`/sky/flower-${variant}.png`}
+    src={`/sky/flower-${variant}.webp`}
     alt=""
     aria-hidden="true"
     loading="lazy"

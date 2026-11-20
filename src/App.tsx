@@ -12,6 +12,8 @@ import { NoteFromUs } from './components/NoteFromUs';
 
 import { RSVPForm } from './components/RSVPForm';
 import { Wishes } from './components/Wishes';
+import { VenueSection } from './components/VenueSection';
+import { GallerySection } from './components/GallerySection';
 import { Footer } from './components/Footer';
 import { IntroVideo } from './components/IntroVideo';
 import { IntroOverlay } from './components/IntroOverlay';
@@ -76,9 +78,9 @@ export default function App() {
       {/* Background Music */}
       <audio
         ref={audioRef}
-        src="/paulyudin-wedding-485932.mp3"
+        src="/ordinary.mp3"
         loop
-        autoPlay
+        preload="none"
         onPlay={() => setIsMusicPlaying(true)}
         onPause={() => setIsMusicPlaying(false)}
       />
@@ -126,9 +128,13 @@ export default function App() {
 
             <HappyCouple />
 
+            <GallerySection />
+
 
 
             <HomecomingDetails />
+
+            <VenueSection />
 
 
 
